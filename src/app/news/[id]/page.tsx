@@ -1,0 +1,65 @@
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { MainHeader } from "@/components/main-header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { H1, Muted, P } from "@/components/ui/typography";
+import { getNewsImageSrc } from "@/data/news";
+import { getNewsById } from "@/lib/news";
+
+type NewsDetailPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
+  const { id } = await params;
+  const article = getNewsById(id);
+
+  if (!article) {
+    notFound();
+  }
+
+  return (
+    <div className="min-h-full bg-gradient-to-b from-muted/40 via-background to-background dark:from-zinc-950 dark:via-background dark:to-zinc-950">
+      <MainHeader currentPath="/news" />
+
+      <main className="mx-auto w-full max-w-4xl px-6 py-14">
+        <Card className="overflow-hidden rounded-3xl border-border/60 bg-card/85 shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+          <div className="relative aspect-[16/9] w-full">
+            <Image
+              src={getNewsImageSrc(article.image)}
+              alt={article.title}
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 896px) 100vw, 896px"
+            />
+          </div>
+          <CardHeader className="space-y-4">
+            <H1 className="text-3xl font-semibold tracking-tight">
+              {article.title}
+            </H1>
+
+            <Muted>{article.date}</Muted>
+          </CardHeader>
+
+          <CardContent className="space-y-8">
+            <P className="text-lg leading-8 text-foreground/90">
+              {article.content}
+            </P>
+
+            <Button
+              render={<Link href="/news" />}
+              variant="outline"
+              className="rounded-full px-5"
+            >
+              Back to News
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+}
