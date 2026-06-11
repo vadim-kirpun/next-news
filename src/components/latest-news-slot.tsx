@@ -2,7 +2,7 @@ import { NewsCard } from "@/components/news-card";
 import { H3 } from "@/components/ui/typography";
 import { getLatestNewsItem } from "@/lib/news";
 
-export default function LatestNewsSlot() {
+export function LatestNewsSlot() {
   const latestNews = getLatestNewsItem();
 
   return (
