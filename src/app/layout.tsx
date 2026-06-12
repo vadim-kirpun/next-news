@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { MainHeader } from "@/components/main-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
@@ -38,7 +39,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <MainHeader />
+
+          <div className="min-h-full bg-gradient-to-b from-muted/40 via-background to-background dark:from-zinc-950 dark:via-background dark:to-zinc-950">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

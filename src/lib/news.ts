@@ -32,8 +32,7 @@ export function getAvailableNewsYears(): number[] {
 export function isValidNewsYear(year: number | string): boolean {
   const parsedYear = Number(year);
   return (
-    Number.isInteger(parsedYear) &&
-    getAvailableNewsYears().includes(parsedYear)
+    Number.isInteger(parsedYear) && getAvailableNewsYears().includes(parsedYear)
   );
 }
 

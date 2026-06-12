@@ -101,9 +101,17 @@ function Muted({ className, ...props }: React.ComponentProps<"p">) {
   return <Text as="p" variant="muted" className={className} {...props} />;
 }
 
-function Blockquote({ className, ...props }: React.ComponentProps<"blockquote">) {
+function Blockquote({
+  className,
+  ...props
+}: React.ComponentProps<"blockquote">) {
   return (
-    <Text as="blockquote" variant="blockquote" className={className} {...props} />
+    <Text
+      as="blockquote"
+      variant="blockquote"
+      className={className}
+      {...props}
+    />
   );
 }
 
