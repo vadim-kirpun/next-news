@@ -17,6 +17,7 @@ export default function Home() {
   const featuredNews = getLatestNewsItem();
 
   return (
+    <div className="min-h-full bg-gradient-to-b from-muted/40 via-background to-background dark:from-zinc-950 dark:via-background dark:to-zinc-950">
     <main className="mx-auto w-full max-w-5xl px-6 py-14">
       <section className="mb-10 space-y-4">
         <Badge variant="outline" className="rounded-full px-3 py-1">
@@ -65,5 +66,6 @@ export default function Home() {
         </Card>
       </section>
     </main>
+    </div>
   );
 }
