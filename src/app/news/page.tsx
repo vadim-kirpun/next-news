@@ -1,8 +1,5 @@
-import Link from "next/link";
-
 import { MainHeader } from "@/components/main-header";
 import { NewsCard } from "@/components/news-card";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -23,13 +20,6 @@ export default function NewsPage() {
             Product and engineering updates presented in a clean editorial
             format.
           </Lead>
-          <Button
-            render={<Link href="/archive" />}
-            variant="outline"
-            className="rounded-full px-5"
-          >
-            Archive
-          </Button>
           <div className="max-w-md">
             <Input placeholder="Search (dummy UI)" aria-label="Search news" />
           </div>

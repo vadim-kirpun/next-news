@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/news", label: "News" },
+  { href: "/archive", label: "Archive" },
 ] as const;
 
 type MainHeaderProps = {
