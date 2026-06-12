@@ -29,6 +29,25 @@ export function getAvailableNewsYears(): number[] {
   }, []).sort((a, b) => b - a);
 }
 
+export function isValidNewsYear(year: number | string): boolean {
+  const parsedYear = Number(year);
+  return (
+    Number.isInteger(parsedYear) &&
+    getAvailableNewsYears().includes(parsedYear)
+  );
+}
+
+export function isValidNewsMonth(
+  year: number | string,
+  month: number | string,
+): boolean {
+  const parsedMonth = Number(month);
+  return (
+    Number.isInteger(parsedMonth) &&
+    getAvailableNewsMonths(year).includes(parsedMonth)
+  );
+}
+
 export function getAvailableNewsMonths(year: number | string): number[] {
   return DUMMY_NEWS.reduce<number[]>((months, news) => {
     const newsYear = new Date(news.date).getFullYear();
