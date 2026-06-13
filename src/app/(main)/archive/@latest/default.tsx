@@ -1,5 +1,5 @@
-import { LatestNewsSlot } from "./_components/latest-news-slot";
+import { LatestNewsPanel } from "@/widgets/latest-news-panel";
 
 export default async function LatestDefault() {
-  return <LatestNewsSlot />;
+  return <LatestNewsPanel />;
 }

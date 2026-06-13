@@ -1,11 +1,10 @@
 import { Suspense } from "react";
-
+import { Separator } from "@/shared/ui/separator";
+import { H1, Lead } from "@/shared/ui/typography";
 import {
   ArchiveSlotSkeleton,
   LatestNewsSlotSkeleton,
-} from "@/components/news-skeletons";
-import { Separator } from "@/components/ui/separator";
-import { H1, Lead } from "@/components/ui/typography";
+} from "@/widgets/news-skeletons";
 
 type ArchiveLayoutProps = {
   archive: React.ReactNode;

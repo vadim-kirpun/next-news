@@ -1,5 +1,5 @@
-import { isValidNewsMonth, isValidNewsYear } from "@/lib/news";
-import { ArchiveSlot } from "../_components/archive-slot";
+import { isValidNewsMonth, isValidNewsYear } from "@/entities/news/server";
+import { ArchivePanel } from "@/widgets/archive-panel";
 
 type ArchiveFilterPageProps = {
   params: Promise<{ filter?: string[] }>;
@@ -20,5 +20,5 @@ export default async function ArchiveFilterPage({
     throw new Error("Invalid month entered.");
   }
 
-  return <ArchiveSlot year={year} month={month} />;
+  return <ArchivePanel year={year} month={month} />;
 }

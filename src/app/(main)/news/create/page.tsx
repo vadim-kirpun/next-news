@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { H1, Lead } from "@/components/ui/typography";
-import { CreateNewsForm } from "./create-news-form";
+import { CreateNewsForm } from "@/features/create-news";
+import { Card, CardContent } from "@/shared/ui/card";
+import { H1, Lead } from "@/shared/ui/typography";
 
 export default function CreateNewsPage() {
   return (

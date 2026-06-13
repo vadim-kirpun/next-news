@@ -1,12 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { H1, Muted, P } from "@/components/ui/typography";
-import { getNewsImageSrc } from "@/data/news";
-import { getNewsById } from "@/lib/news";
+import { getNewsImageSrc } from "@/entities/news";
+import { getNewsById } from "@/entities/news/server";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader } from "@/shared/ui/card";
+import { H1, Muted, P } from "@/shared/ui/typography";
 
 type NewsDetailPageProps = {
   params: Promise<{ id: string }>;

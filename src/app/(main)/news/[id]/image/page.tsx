@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-
-import { NewsImageViewer } from "@/components/news-image-viewer";
-import { getNewsById } from "@/lib/news";
+import { getNewsById } from "@/entities/news/server";
+import { NewsImageViewer } from "@/widgets/news-image-viewer";
 
 type NewsImagePageProps = {
   params: Promise<{ id: string }>;

@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { H3, Muted } from "@/components/ui/typography";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent } from "@/shared/ui/card";
+import { H3, Muted } from "@/shared/ui/typography";
 
 type ArchiveSlotErrorProps = {
   error: Error & { digest?: string };

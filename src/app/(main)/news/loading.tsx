@@ -1,5 +1,5 @@
-import { NewsCardSkeleton } from "@/components/news-skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/shared/ui/skeleton";
+import { NewsCardSkeleton } from "@/widgets/news-skeletons";
 
 export default function Loading() {
   return (

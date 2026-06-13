@@ -1,17 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { getNewsImageSrc } from "@/entities/news";
+import { getLatestNewsItem } from "@/entities/news/server";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-} from "@/components/ui/card";
-import { H1, H3, Lead, Muted } from "@/components/ui/typography";
-import { getNewsImageSrc } from "@/data/news";
-import { getLatestNewsItem } from "@/lib/news";
+} from "@/shared/ui/card";
+import { H1, H3, Lead, Muted } from "@/shared/ui/typography";
 
 export default async function Home() {
   const featuredNews = await getLatestNewsItem();

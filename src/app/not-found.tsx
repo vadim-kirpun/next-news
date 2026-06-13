@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { H1, Lead, Muted } from "@/components/ui/typography";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader } from "@/shared/ui/card";
+import { H1, Lead, Muted } from "@/shared/ui/typography";
 
 export default function NotFound() {
   return (

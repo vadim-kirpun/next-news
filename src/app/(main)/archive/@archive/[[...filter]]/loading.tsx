@@ -1,4 +1,4 @@
-import { ArchiveSlotSkeleton } from "@/components/news-skeletons";
+import { ArchiveSlotSkeleton } from "@/widgets/news-skeletons";
 
 export default function Loading() {
   return <ArchiveSlotSkeleton />;
