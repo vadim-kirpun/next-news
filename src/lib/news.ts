@@ -1,7 +1,9 @@
 import { cache } from "react";
+import slugify from "slugify";
 
 import type { NewsItem } from "@/data/news";
 import { getDb } from "@/lib/db";
+import { sanitizeMultilineText, sanitizePlainText } from "@/lib/sanitize";
 
 type NewsRow = {
   id: number;
@@ -10,6 +12,12 @@ type NewsRow = {
   image: string;
   date: string;
   content: string;
+};
+
+type CreateNewsInput = {
+  title: string;
+  content: string;
+  image: string;
 };
 
 function normalizeNewsItem(item: NewsRow): NewsItem {
@@ -148,4 +156,56 @@ export async function getNewsForYearAndMonth(
     .all(String(+year), +month) as NewsRow[];
 
   return rows.map(normalizeNewsItem);
+}
+
+function createUniqueSlug(baseTitle: string) {
+  const db = getDb();
+  const baseSlug =
+    slugify(baseTitle, { lower: true, strict: true, trim: true }) ||
+    "news-item";
+
+  let candidate = baseSlug;
+  let suffix = 1;
+
+  while (true) {
+    const row = db
+      .prepare("SELECT 1 FROM news WHERE slug = ? LIMIT 1")
+      .get(candidate);
+
+    if (!row) {
+      return candidate;
+    }
+
+    suffix += 1;
+    candidate = `${baseSlug}-${suffix}`;
+  }
+}
+
+export async function createNewsItem({
+  title,
+  content,
+  image,
+}: CreateNewsInput): Promise<NewsItem> {
+  const db = getDb();
+
+  const sanitizedTitle = sanitizePlainText(title);
+  const sanitizedContent = sanitizeMultilineText(content);
+  const slug = createUniqueSlug(sanitizedTitle);
+  const date = new Date().toISOString().slice(0, 10);
+
+  const result = db
+    .prepare(
+      "INSERT INTO news (slug, title, content, date, image) VALUES (?, ?, ?, ?, ?)",
+    )
+    .run(slug, sanitizedTitle, sanitizedContent, date, image);
+
+  const created = db
+    .prepare("SELECT * FROM news WHERE id = ? LIMIT 1")
+    .get(result.lastInsertRowid) as NewsRow | undefined;
+
+  if (!created) {
+    throw new Error("Failed to create news item");
+  }
+
+  return normalizeNewsItem(created);
 }

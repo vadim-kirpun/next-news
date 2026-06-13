@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import { NewsCard } from "@/components/news-card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { H1, Lead } from "@/components/ui/typography";
@@ -10,7 +13,16 @@ export default async function NewsPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-14">
       <div className="mb-8 space-y-3">
-        <H1 className="font-semibold">News</H1>
+        <div className="flex items-center justify-between gap-4">
+          <H1 className="font-semibold">News</H1>
+
+          <Button
+            render={<Link href="/news/create" />}
+            className="rounded-full px-5"
+          >
+            Create
+          </Button>
+        </div>
 
         <Lead className="max-w-2xl text-base">
           Product and engineering updates presented in a clean editorial format.
