@@ -2,11 +2,12 @@ import { Input } from "@/components/ui/input";
 import { FieldError } from "./field-error";
 
 type TitleFieldProps = {
-  defaultValue?: string;
+  value: string;
+  onChange: (nextValue: string) => void;
   errors?: string[];
 };
 
-export function TitleField({ defaultValue, errors }: TitleFieldProps) {
+export function TitleField({ value, onChange, errors }: TitleFieldProps) {
   return (
     <div className="space-y-2">
       <label htmlFor="title" className="text-sm font-medium">
@@ -20,7 +21,8 @@ export function TitleField({ defaultValue, errors }: TitleFieldProps) {
         minLength={5}
         maxLength={120}
         aria-invalid={Boolean(errors)}
-        defaultValue={defaultValue}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
         placeholder="e.g. Shipping a new editorial experience"
       />
       <FieldError errors={errors} />

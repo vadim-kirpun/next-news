@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import * as v from "valibot";
 
 import { createNewsItem } from "@/lib/news";
+import type { CreateNewsState } from "./form-state";
 
 const MAX_IMAGE_UPLOAD_SIZE = 3 * 1024 * 1024;
 const uploadDir = path.join(process.cwd(), "public", "images");
@@ -27,26 +28,6 @@ const createNewsSchema = v.strictObject({
     v.maxLength(10_000, "Content should be at most 10000 characters"),
   ),
 });
-
-export type CreateNewsState = {
-  message?: string;
-  fieldErrors?: {
-    title?: string[];
-    content?: string[];
-    imageUpload?: string[];
-  };
-  values?: {
-    title: string;
-    content: string;
-  };
-};
-
-export const initialCreateNewsState: CreateNewsState = {
-  values: {
-    title: "",
-    content: "",
-  },
-};
 
 function getImageExtensionFromSignature(buffer: Buffer) {
   const isPng =
@@ -137,27 +118,25 @@ export async function createNewsAction(
     };
   }
 
-  try {
-    if (!(uploadedImage instanceof File)) {
-      return {
-        message: "Please fix validation errors.",
-        fieldErrors: {
-          imageUpload: ["Please upload a cover image."],
-        },
-        values: rawValues,
-      };
-    }
+  if (!(uploadedImage instanceof File)) {
+    return {
+      message: "Please fix validation errors.",
+      fieldErrors: {
+        imageUpload: ["Please upload a cover image."],
+      },
+      values: rawValues,
+    };
+  }
 
+  let createdNewsId: string;
+
+  try {
     const uploadedImageName = await saveUploadedImage(uploadedImage);
     const created = await createNewsItem({
       ...parsed.output,
       image: uploadedImageName,
     });
-
-    revalidatePath("/news");
-    revalidatePath("/");
-
-    redirect(`/news/${created.id}`);
+    createdNewsId = created.id;
   } catch (error) {
     const message =
       error instanceof Error
@@ -172,4 +151,9 @@ export async function createNewsAction(
       values: rawValues,
     };
   }
+
+  revalidatePath("/news");
+  revalidatePath("/");
+
+  redirect(`/news/${createdNewsId}`);
 }
