@@ -38,6 +38,7 @@ export default function ArchiveSlotError({
             >
               Back to Archive
             </Button>
+
             <Button
               onClick={reset}
               variant="outline"
