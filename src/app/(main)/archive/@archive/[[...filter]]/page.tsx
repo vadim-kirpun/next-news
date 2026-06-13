@@ -1,5 +1,5 @@
-import { ArchiveSlot } from "@/components/archive-slot";
 import { isValidNewsMonth, isValidNewsYear } from "@/lib/news";
+import { ArchiveSlot } from "../_components/archive-slot";
 
 type ArchiveFilterPageProps = {
   params: Promise<{ filter?: string[] }>;

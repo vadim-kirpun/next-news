@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { HeaderNav } from "@/components/header-nav";
+import { HeaderNav } from "@/app/(main)/_components/header-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Text } from "@/components/ui/typography";
 

@@ -48,16 +48,19 @@ export function NewsCardSkeleton({
             isCompact ? "sm:w-40" : "sm:w-56",
           )}
         />
+
         <div className="flex flex-1 flex-col gap-4 p-6">
           <div className="space-y-2">
             <Skeleton className="h-4 w-24" />
             <Skeleton className={cn("h-7", isCompact ? "w-3/4" : "w-2/3")} />
           </div>
+
           <div className="mt-auto space-y-4">
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-5/6" />
             </div>
+
             <Skeleton className="h-10 w-24 rounded-full" />
           </div>
         </div>
@@ -71,16 +74,19 @@ export function NewsDetailSkeleton() {
     <main className="mx-auto w-full max-w-4xl px-6 py-14">
       <Card className="overflow-hidden rounded-3xl border-border/60 bg-card/85 shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
         <Skeleton className="aspect-[16/9] w-full rounded-none" />
+
         <CardHeader className="space-y-4">
           <Skeleton className="h-10 w-3/4" />
           <Skeleton className="h-4 w-28" />
         </CardHeader>
+
         <CardContent className="space-y-8">
           <div className="space-y-3">
             <Skeleton className="h-5 w-full" />
             <Skeleton className="h-5 w-full" />
             <Skeleton className="h-5 w-5/6" />
           </div>
+
           <Skeleton className="h-10 w-36 rounded-full" />
         </CardContent>
       </Card>
@@ -99,6 +105,7 @@ export function HomeFeaturedSkeleton() {
           <Skeleton className="h-5 w-full max-w-xl" />
           <Skeleton className="h-10 w-36 rounded-full" />
         </section>
+
         <FeaturedNewsSkeleton />
       </main>
     </div>
