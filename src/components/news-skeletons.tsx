@@ -118,29 +118,14 @@ export function ArchiveSlotSkeleton() {
   return (
     <div className="space-y-4">
       <Skeleton className="h-7 w-40" />
+
       <div className="flex flex-wrap gap-2">
         {["2024", "2023", "2022", "2021"].map((year) => (
           <Skeleton key={year} className="h-10 w-16 rounded-full" />
         ))}
       </div>
+
       <Skeleton className="h-4 w-56" />
     </div>
-  );
-}
-
-export function ArchivePageSkeleton() {
-  return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-14">
-      <div className="mb-8 space-y-3">
-        <Skeleton className="h-10 w-28" />
-        <Skeleton className="h-5 w-full max-w-2xl" />
-        <Skeleton className="mt-6 h-px w-full" />
-      </div>
-
-      <div className="grid gap-8 lg:grid-cols-2">
-        <LatestNewsSlotSkeleton />
-        <ArchiveSlotSkeleton />
-      </div>
-    </main>
   );
 }
