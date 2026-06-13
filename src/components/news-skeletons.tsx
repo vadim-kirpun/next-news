@@ -9,16 +9,19 @@ export function FeaturedNewsSkeleton() {
   return (
     <Card className={cardClassName}>
       <Skeleton className="aspect-[16/9] w-full rounded-none" />
+
       <CardHeader className="space-y-3">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-8 w-2/3" />
       </CardHeader>
+
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-4/5" />
         </div>
+
         <Skeleton className="h-10 w-32 rounded-full" />
       </CardContent>
     </Card>
@@ -122,5 +125,22 @@ export function ArchiveSlotSkeleton() {
       </div>
       <Skeleton className="h-4 w-56" />
     </div>
+  );
+}
+
+export function ArchivePageSkeleton() {
+  return (
+    <main className="mx-auto w-full max-w-5xl px-6 py-14">
+      <div className="mb-8 space-y-3">
+        <Skeleton className="h-10 w-28" />
+        <Skeleton className="h-5 w-full max-w-2xl" />
+        <Skeleton className="mt-6 h-px w-full" />
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-2">
+        <LatestNewsSlotSkeleton />
+        <ArchiveSlotSkeleton />
+      </div>
+    </main>
   );
 }

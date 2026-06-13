@@ -1,3 +1,9 @@
+import { Suspense } from "react";
+
+import {
+  ArchiveSlotSkeleton,
+  LatestNewsSlotSkeleton,
+} from "@/components/news-skeletons";
 import { Separator } from "@/components/ui/separator";
 import { H1, Lead } from "@/components/ui/typography";
 
@@ -21,8 +27,13 @@ export default function ArchiveLayout({ archive, latest }: ArchiveLayoutProps) {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        <section className="space-y-4">{latest}</section>
-        <section className="space-y-4">{archive}</section>
+        <section className="space-y-4">
+          <Suspense fallback={<LatestNewsSlotSkeleton />}>{latest}</Suspense>
+        </section>
+
+        <section className="space-y-4">
+          <Suspense fallback={<ArchiveSlotSkeleton />}>{archive}</Suspense>
+        </section>
       </div>
     </main>
   );

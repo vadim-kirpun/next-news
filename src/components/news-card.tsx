@@ -9,7 +9,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { H3, Muted } from "@/components/ui/typography";
-import { type NewsItem, getNewsImageSrc } from "@/data/news";
+import { getNewsImageSrc, type NewsItem } from "@/data/news";
 import { cn } from "@/lib/utils";
 
 const cardClassName =
