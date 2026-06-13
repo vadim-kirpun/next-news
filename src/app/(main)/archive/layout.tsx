@@ -11,10 +11,12 @@ export default function ArchiveLayout({ archive, latest }: ArchiveLayoutProps) {
     <main className="mx-auto w-full max-w-5xl px-6 py-14">
       <div className="mb-8 space-y-3">
         <H1 className="font-semibold">Archive</H1>
+
         <Lead className="max-w-2xl text-base">
           Parallel routes: latest story and older articles rendered in separate
           slots.
         </Lead>
+
         <Separator className="mt-6" />
       </div>
 
