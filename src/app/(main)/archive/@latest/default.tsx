@@ -1,5 +1,5 @@
 import { LatestNewsSlot } from "@/components/latest-news-slot";
 
-export default function LatestDefault() {
+export default async function LatestDefault() {
   return <LatestNewsSlot />;
 }

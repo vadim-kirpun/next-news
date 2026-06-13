@@ -9,7 +9,7 @@ type NewsImageModalProps = {
 
 export default async function NewsImageModal({ params }: NewsImageModalProps) {
   const { id } = await params;
-  const article = getNewsById(id);
+  const article = await getNewsById(id);
 
   if (!article) {
     notFound();

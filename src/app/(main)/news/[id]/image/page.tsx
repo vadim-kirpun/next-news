@@ -12,7 +12,7 @@ export async function generateMetadata({
   params,
 }: NewsImagePageProps): Promise<Metadata> {
   const { id } = await params;
-  const article = getNewsById(id);
+  const article = await getNewsById(id);
 
   if (!article) {
     return { title: "Image not found" };
@@ -25,7 +25,7 @@ export async function generateMetadata({
 
 export default async function NewsImagePage({ params }: NewsImagePageProps) {
   const { id } = await params;
-  const article = getNewsById(id);
+  const article = await getNewsById(id);
 
   if (!article) {
     notFound();

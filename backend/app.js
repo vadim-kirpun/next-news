@@ -74,7 +74,8 @@ const app = express();
 
 app.use(cors());
 
-app.get("/news", (_req, res) => {
+app.get("/news", async (_req, res) => {
+  await new Promise((resolve) => setTimeout(resolve, 2000));
   const news = db.prepare("SELECT * FROM news").all();
   res.json(news);
 });

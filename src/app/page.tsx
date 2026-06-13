@@ -13,8 +13,8 @@ import { H1, H3, Lead, Muted } from "@/components/ui/typography";
 import { getNewsImageSrc } from "@/data/news";
 import { getLatestNewsItem } from "@/lib/news";
 
-export default function Home() {
-  const featuredNews = getLatestNewsItem();
+export default async function Home() {
+  const featuredNews = await getLatestNewsItem();
 
   return (
     <div className="min-h-full bg-gradient-to-b from-muted/40 via-background to-background dark:from-zinc-950 dark:via-background dark:to-zinc-950">

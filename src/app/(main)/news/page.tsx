@@ -4,8 +4,8 @@ import { Separator } from "@/components/ui/separator";
 import { H1, Lead } from "@/components/ui/typography";
 import { getAllNews } from "@/lib/news";
 
-export default function NewsPage() {
-  const news = getAllNews();
+export default async function NewsPage() {
+  const news = await getAllNews();
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-14">

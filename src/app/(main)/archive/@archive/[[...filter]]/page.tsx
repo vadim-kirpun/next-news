@@ -12,11 +12,11 @@ export default async function ArchiveFilterPage({
   const year = filter?.[0];
   const month = filter?.[1];
 
-  if (year && !isValidNewsYear(year)) {
+  if (year && !(await isValidNewsYear(year))) {
     throw new Error("Invalid year entered.");
   }
 
-  if (month && (!year || !isValidNewsMonth(year, month))) {
+  if (month && (!year || !(await isValidNewsMonth(year, month)))) {
     throw new Error("Invalid month entered.");
   }
 

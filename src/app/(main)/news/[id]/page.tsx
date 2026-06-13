@@ -14,7 +14,7 @@ type NewsDetailPageProps = {
 
 export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
   const { id } = await params;
-  const article = getNewsById(id);
+  const article = await getNewsById(id);
 
   if (!article) {
     notFound();

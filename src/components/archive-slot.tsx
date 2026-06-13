@@ -22,13 +22,13 @@ function formatMonthName(month: number, year: number | string): string {
   );
 }
 
-export function ArchiveSlot({ year, month }: ArchiveSlotProps) {
-  const years = getAvailableNewsYears();
-  const months = year ? getAvailableNewsMonths(year) : [];
+export async function ArchiveSlot({ year, month }: ArchiveSlotProps) {
+  const years = await getAvailableNewsYears();
+  const months = year ? await getAvailableNewsMonths(year) : [];
   const news = year
     ? month
-      ? getNewsForYearAndMonth(year, month)
-      : getNewsForYear(year)
+      ? await getNewsForYearAndMonth(year, month)
+      : await getNewsForYear(year)
     : [];
 
   const title = year

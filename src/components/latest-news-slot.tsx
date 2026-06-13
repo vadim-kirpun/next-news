@@ -2,8 +2,8 @@ import { NewsCard } from "@/components/news-card";
 import { H3 } from "@/components/ui/typography";
 import { getLatestNewsItem } from "@/lib/news";
 
-export function LatestNewsSlot() {
-  const latestNews = getLatestNewsItem();
+export async function LatestNewsSlot() {
+  const latestNews = await getLatestNewsItem();
 
   return (
     <>
