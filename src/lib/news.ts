@@ -1,11 +1,10 @@
 import { cache } from "react";
 
 import type { NewsItem } from "@/data/news";
+import { getDb } from "@/lib/db";
 
-const NEWS_API_URL = process.env.NEWS_API_URL ?? "http://localhost:8080";
-
-type ApiNewsItem = {
-  id: number | string;
+type NewsRow = {
+  id: number;
   slug: string;
   title: string;
   image: string;
@@ -13,10 +12,7 @@ type ApiNewsItem = {
   content: string;
 };
 
-const sortByDateDesc = (a: NewsItem, b: NewsItem) =>
-  new Date(b.date).getTime() - new Date(a.date).getTime();
-
-function normalizeNewsItem(item: ApiNewsItem): NewsItem {
+function normalizeNewsItem(item: NewsRow): NewsItem {
   return {
     ...item,
     id: String(item.id),
@@ -24,96 +20,132 @@ function normalizeNewsItem(item: ApiNewsItem): NewsItem {
 }
 
 export const getAllNews = cache(async (): Promise<NewsItem[]> => {
-  const response = await fetch(`${NEWS_API_URL}/news`, { cache: "no-store" });
+  const db = getDb();
+  const rows = db
+    .prepare("SELECT * FROM news ORDER BY date DESC")
+    .all() as NewsRow[];
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch news");
-  }
-
-  const data = (await response.json()) as ApiNewsItem[];
-  return data.map(normalizeNewsItem);
+  return rows.map(normalizeNewsItem);
 });
 
 export async function getLatestNews(): Promise<NewsItem[]> {
-  const news = await getAllNews();
-  return [...news].sort(sortByDateDesc).slice(0, 3);
+  const db = getDb();
+  const rows = db
+    .prepare("SELECT * FROM news ORDER BY date DESC LIMIT 3")
+    .all() as NewsRow[];
+
+  return rows.map(normalizeNewsItem);
 }
 
 export async function getLatestNewsItem(): Promise<NewsItem> {
-  const news = await getAllNews();
-  return [...news].sort(sortByDateDesc)[0];
+  const db = getDb();
+  const row = db
+    .prepare("SELECT * FROM news ORDER BY date DESC LIMIT 1")
+    .get() as NewsRow | undefined;
+
+  if (!row) {
+    throw new Error("No news items found");
+  }
+
+  return normalizeNewsItem(row);
 }
 
-export async function getNewsById(id: string): Promise<NewsItem | undefined> {
-  const news = await getAllNews();
-  return news.find((item) => item.id === id || item.slug === id);
-}
+export const getNewsById = cache(
+  async (id: string): Promise<NewsItem | undefined> => {
+    const db = getDb();
+    const row = db
+      .prepare(
+        "SELECT * FROM news WHERE slug = ? OR CAST(id AS TEXT) = ? LIMIT 1",
+      )
+      .get(id, id) as NewsRow | undefined;
+
+    return row ? normalizeNewsItem(row) : undefined;
+  },
+);
 
 export async function getAvailableNewsYears(): Promise<number[]> {
-  const news = await getAllNews();
-  return news
-    .reduce<number[]>((years, item) => {
-      const year = new Date(item.date).getFullYear();
-      if (!years.includes(year)) {
-        years.push(year);
-      }
-      return years;
-    }, [])
-    .sort((a, b) => b - a);
+  const db = getDb();
+  const rows = db
+    .prepare(
+      "SELECT DISTINCT CAST(strftime('%Y', date) AS INTEGER) AS year FROM news ORDER BY year DESC",
+    )
+    .all() as { year: number }[];
+
+  return rows.map((row) => row.year);
 }
 
 export async function isValidNewsYear(year: number | string): Promise<boolean> {
   const parsedYear = Number(year);
-  const years = await getAvailableNewsYears();
-  return Number.isInteger(parsedYear) && years.includes(parsedYear);
+
+  if (!Number.isInteger(parsedYear)) {
+    return false;
+  }
+
+  const db = getDb();
+  const row = db
+    .prepare("SELECT 1 FROM news WHERE strftime('%Y', date) = ? LIMIT 1")
+    .get(String(parsedYear));
+
+  return row !== undefined;
 }
 
 export async function isValidNewsMonth(
   year: number | string,
   month: number | string,
 ): Promise<boolean> {
+  const parsedYear = Number(year);
   const parsedMonth = Number(month);
-  const months = await getAvailableNewsMonths(year);
-  return Number.isInteger(parsedMonth) && months.includes(parsedMonth);
+
+  if (!Number.isInteger(parsedYear) || !Number.isInteger(parsedMonth)) {
+    return false;
+  }
+
+  const db = getDb();
+  const row = db
+    .prepare(
+      "SELECT 1 FROM news WHERE strftime('%Y', date) = ? AND CAST(strftime('%m', date) AS INTEGER) = ? LIMIT 1",
+    )
+    .get(String(parsedYear), parsedMonth);
+
+  return row !== undefined;
 }
 
 export async function getAvailableNewsMonths(
   year: number | string,
 ): Promise<number[]> {
-  const news = await getAllNews();
-  return news
-    .reduce<number[]>((months, item) => {
-      const newsYear = new Date(item.date).getFullYear();
-      if (newsYear === +year) {
-        const month = new Date(item.date).getMonth();
-        if (!months.includes(month)) {
-          months.push(month + 1);
-        }
-      }
-      return months;
-    }, [])
-    .sort((a, b) => b - a);
+  const db = getDb();
+  const rows = db
+    .prepare(
+      "SELECT DISTINCT CAST(strftime('%m', date) AS INTEGER) AS month FROM news WHERE strftime('%Y', date) = ? ORDER BY month DESC",
+    )
+    .all(String(+year)) as { month: number }[];
+
+  return rows.map((row) => row.month);
 }
 
 export async function getNewsForYear(
   year: number | string,
 ): Promise<NewsItem[]> {
-  const news = await getAllNews();
-  return news
-    .filter((item) => new Date(item.date).getFullYear() === +year)
-    .sort(sortByDateDesc);
+  const db = getDb();
+  const rows = db
+    .prepare(
+      "SELECT * FROM news WHERE strftime('%Y', date) = ? ORDER BY date DESC",
+    )
+    .all(String(+year)) as NewsRow[];
+
+  return rows.map(normalizeNewsItem);
 }
 
 export async function getNewsForYearAndMonth(
   year: number | string,
   month: number | string,
 ): Promise<NewsItem[]> {
-  const news = await getAllNews();
-  return news
-    .filter((item) => {
-      const newsYear = new Date(item.date).getFullYear();
-      const newsMonth = new Date(item.date).getMonth() + 1;
-      return newsYear === +year && newsMonth === +month;
-    })
-    .sort(sortByDateDesc);
+  const db = getDb();
+  const rows = db
+    .prepare(
+      "SELECT * FROM news WHERE strftime('%Y', date) = ? AND CAST(strftime('%m', date) AS INTEGER) = ? ORDER BY date DESC",
+    )
+    .all(String(+year), +month) as NewsRow[];
+
+  return rows.map(normalizeNewsItem);
 }
