@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { getNewsLikeInfo } from "@/entities/like/server";
 import {
   getAvailableNewsMonths,
   getAvailableNewsYears,
@@ -31,8 +30,6 @@ export async function ArchivePanel({ year, month }: ArchivePanelProps) {
       ? await getNewsForYearAndMonth(year, month)
       : await getNewsForYear(year)
     : [];
-  const likeInfoByNewsId = await getNewsLikeInfo(news.map((item) => item.id));
-
   const title = year
     ? month
       ? `Archive — ${formatMonthName(Number(month), year)} ${year}`
@@ -95,11 +92,7 @@ export async function ArchivePanel({ year, month }: ArchivePanelProps) {
         <ul className="grid gap-4">
           {news.map((newsItem) => (
             <li key={newsItem.id}>
-              <NewsCard
-                newsItem={newsItem}
-                variant="compact"
-                likeInfo={likeInfoByNewsId[newsItem.id]}
-              />
+              <NewsCard newsItem={newsItem} variant="compact" />
             </li>
           ))}
         </ul>

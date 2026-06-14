@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 
-import type { NewsLikeInfo } from "@/entities/like";
 import { getNewsImageSrc, type NewsItem } from "@/entities/news";
-import { NewsLikeButton } from "@/features/toggle-news-like";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
@@ -14,35 +13,28 @@ import {
 } from "@/shared/ui/card";
 import { H3, Muted } from "@/shared/ui/typography";
 
+import { NewsCardLikeFallback } from "./news-card-like-fallback";
+import { NewsCardLikeSlot } from "./news-card-like-slot";
+
 const cardClassName =
   "overflow-hidden rounded-3xl border-border/60 bg-card/85 shadow-[0_8px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)]";
 
 type NewsCardProps = {
   newsItem: NewsItem;
   variant?: "default" | "compact" | "featured";
-  likeInfo?: NewsLikeInfo;
 };
 
-function NewsCardLikeButton({
-  newsId,
-  likeInfo,
-}: {
-  newsId: string;
-  likeInfo?: NewsLikeInfo;
-}) {
+function NewsCardLike({ newsId }: { newsId: string }) {
   return (
-    <NewsLikeButton
-      newsId={newsId}
-      initialIsLiked={likeInfo?.isLiked ?? false}
-      initialLikeCount={likeInfo?.likeCount ?? 0}
-    />
+    <Suspense fallback={<NewsCardLikeFallback />}>
+      <NewsCardLikeSlot newsId={newsId} />
+    </Suspense>
   );
 }
 
 export function NewsCard({
   newsItem,
   variant = "default",
-  likeInfo,
 }: NewsCardProps) {
   const articleHref = `/news/${newsItem.id}`;
 
@@ -65,7 +57,7 @@ export function NewsCard({
               <H3 className="text-2xl">{newsItem.title}</H3>
             </div>
 
-            <NewsCardLikeButton newsId={newsItem.id} likeInfo={likeInfo} />
+            <NewsCardLike newsId={newsItem.id} />
           </div>
         </CardHeader>
 
@@ -123,7 +115,7 @@ export function NewsCard({
                 )}
               </div>
 
-              <NewsCardLikeButton newsId={newsItem.id} likeInfo={likeInfo} />
+              <NewsCardLike newsId={newsItem.id} />
             </div>
           </CardHeader>
           <CardContent

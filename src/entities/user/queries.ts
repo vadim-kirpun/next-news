@@ -3,7 +3,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 
 import type { User } from "@/entities/user/types";
-import { getDb } from "@/shared/db";
+import { getReadDb } from "@/shared/db";
 import { DEFAULT_USER_ID } from "@/shared/db/seed";
 
 type UserRow = {
@@ -25,7 +25,7 @@ export async function getDefaultUserId(): Promise<number> {
   cacheTag("users");
   cacheLife("max");
 
-  const db = getDb();
+  const db = getReadDb();
 
   const row = db
     .prepare("SELECT id FROM users WHERE id = ? LIMIT 1")
@@ -43,7 +43,7 @@ export async function getDefaultUser(): Promise<User> {
   cacheTag("users");
   cacheLife("max");
 
-  const db = getDb();
+  const db = getReadDb();
 
   const row = db
     .prepare("SELECT * FROM users WHERE id = ? LIMIT 1")

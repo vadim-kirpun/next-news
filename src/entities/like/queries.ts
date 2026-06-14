@@ -4,7 +4,7 @@ import { cacheLife, cacheTag } from "next/cache";
 
 import type { NewsLikeInfo } from "@/entities/like/types";
 import { getDefaultUserId } from "@/entities/user/queries";
-import { getDb } from "@/shared/db";
+import { getReadDb, getWriteDb } from "@/shared/db";
 
 type LikeRow = {
   news_id: number;
@@ -29,7 +29,7 @@ export async function getNewsLikeInfo(
     return {};
   }
 
-  const db = getDb();
+  const db = getReadDb();
   const numericIds = newsIds.map((id) => Number(id));
   const placeholders = numericIds.map(() => "?").join(", ");
 
@@ -76,7 +76,7 @@ export async function toggleNewsLike(
   userId?: number,
 ): Promise<NewsLikeInfo> {
   const resolvedUserId = userId ?? (await getDefaultUserId());
-  const db = getDb();
+  const db = getWriteDb();
   const numericNewsId = Number(newsId);
 
   if (!Number.isInteger(numericNewsId)) {

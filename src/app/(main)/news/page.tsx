@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { getNewsLikeInfo } from "@/entities/like/server";
 import { getAllNews } from "@/entities/news/server";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -9,7 +8,6 @@ import { NewsCard } from "@/widgets/news-card";
 
 export default async function NewsPage() {
   const news = await getAllNews();
-  const likeInfoByNewsId = await getNewsLikeInfo(news.map((item) => item.id));
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-14">
@@ -38,11 +36,7 @@ export default async function NewsPage() {
 
       <section className="grid gap-5">
         {news.map((newsItem) => (
-          <NewsCard
-            key={newsItem.id}
-            newsItem={newsItem}
-            likeInfo={likeInfoByNewsId[newsItem.id]}
-          />
+          <NewsCard key={newsItem.id} newsItem={newsItem} />
         ))}
       </section>
     </main>

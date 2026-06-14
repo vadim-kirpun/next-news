@@ -12,7 +12,8 @@ import {
 const DB_PATH = path.join(process.cwd(), "data", "news.db");
 
 type GlobalWithDb = typeof globalThis & {
-  newsDb?: Database.Database;
+  newsReadDb?: Database.Database;
+  newsWriteDb?: Database.Database;
 };
 
 function initDb(db: Database.Database) {
@@ -62,13 +63,28 @@ function initDb(db: Database.Database) {
   }
 }
 
-export function getDb() {
+export function getWriteDb() {
   const globalForDb = globalThis as GlobalWithDb;
 
-  if (!globalForDb.newsDb) {
-    globalForDb.newsDb = new Database(DB_PATH);
-    initDb(globalForDb.newsDb);
+  if (!globalForDb.newsWriteDb) {
+    globalForDb.newsWriteDb = new Database(DB_PATH);
+    initDb(globalForDb.newsWriteDb);
   }
 
-  return globalForDb.newsDb;
+  return globalForDb.newsWriteDb;
+}
+
+export function getReadDb() {
+  const globalForDb = globalThis as GlobalWithDb;
+
+  if (!globalForDb.newsReadDb) {
+    globalForDb.newsReadDb = new Database(DB_PATH, { readonly: true });
+  }
+
+  return globalForDb.newsReadDb;
+}
+
+/** Writable connection for mutations. Prefer getReadDb for cached reads. */
+export function getDb() {
+  return getWriteDb();
 }

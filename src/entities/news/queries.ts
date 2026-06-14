@@ -8,7 +8,7 @@ import {
   sanitizeMultilineText,
   sanitizePlainText,
 } from "@/shared/api/sanitize";
-import { getDb } from "@/shared/db";
+import { getReadDb, getWriteDb } from "@/shared/db";
 
 type NewsRow = {
   id: number;
@@ -37,7 +37,7 @@ export async function getAllNews(): Promise<NewsItem[]> {
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getDb();
+  const db = getReadDb();
   const rows = db
     .prepare("SELECT * FROM news ORDER BY date DESC")
     .all() as NewsRow[];
@@ -50,7 +50,7 @@ export async function getLatestNews(): Promise<NewsItem[]> {
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getDb();
+  const db = getReadDb();
   const rows = db
     .prepare("SELECT * FROM news ORDER BY date DESC LIMIT 3")
     .all() as NewsRow[];
@@ -63,7 +63,7 @@ export async function getLatestNewsItem(): Promise<NewsItem> {
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getDb();
+  const db = getReadDb();
   const row = db
     .prepare("SELECT * FROM news ORDER BY date DESC LIMIT 1")
     .get() as NewsRow | undefined;
@@ -80,7 +80,7 @@ export async function getNewsById(id: string): Promise<NewsItem | undefined> {
   cacheTag("news", `news-item-${id}`);
   cacheLife("minutes");
 
-  const db = getDb();
+  const db = getReadDb();
   const row = db
     .prepare(
       "SELECT * FROM news WHERE slug = ? OR CAST(id AS TEXT) = ? LIMIT 1",
@@ -95,7 +95,7 @@ export async function getAvailableNewsYears(): Promise<number[]> {
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getDb();
+  const db = getReadDb();
   const rows = db
     .prepare(
       "SELECT DISTINCT CAST(strftime('%Y', date) AS INTEGER) AS year FROM news ORDER BY year DESC",
@@ -116,7 +116,7 @@ export async function isValidNewsYear(year: number | string): Promise<boolean> {
     return false;
   }
 
-  const db = getDb();
+  const db = getReadDb();
   const row = db
     .prepare("SELECT 1 FROM news WHERE strftime('%Y', date) = ? LIMIT 1")
     .get(String(parsedYear));
@@ -139,7 +139,7 @@ export async function isValidNewsMonth(
     return false;
   }
 
-  const db = getDb();
+  const db = getReadDb();
   const row = db
     .prepare(
       "SELECT 1 FROM news WHERE strftime('%Y', date) = ? AND CAST(strftime('%m', date) AS INTEGER) = ? LIMIT 1",
@@ -156,7 +156,7 @@ export async function getAvailableNewsMonths(
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getDb();
+  const db = getReadDb();
   const rows = db
     .prepare(
       "SELECT DISTINCT CAST(strftime('%m', date) AS INTEGER) AS month FROM news WHERE strftime('%Y', date) = ? ORDER BY month DESC",
@@ -173,7 +173,7 @@ export async function getNewsForYear(
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getDb();
+  const db = getReadDb();
   const rows = db
     .prepare(
       "SELECT * FROM news WHERE strftime('%Y', date) = ? ORDER BY date DESC",
@@ -191,7 +191,7 @@ export async function getNewsForYearAndMonth(
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getDb();
+  const db = getReadDb();
   const rows = db
     .prepare(
       "SELECT * FROM news WHERE strftime('%Y', date) = ? AND CAST(strftime('%m', date) AS INTEGER) = ? ORDER BY date DESC",
@@ -202,7 +202,7 @@ export async function getNewsForYearAndMonth(
 }
 
 function createUniqueSlug(baseTitle: string) {
-  const db = getDb();
+  const db = getWriteDb();
   const baseSlug =
     slugify(baseTitle, { lower: true, strict: true, trim: true }) ||
     "news-item";
@@ -229,7 +229,7 @@ export async function createNewsItem({
   content,
   image,
 }: CreateNewsInput): Promise<NewsItem> {
-  const db = getDb();
+  const db = getWriteDb();
 
   const sanitizedTitle = sanitizePlainText(title);
   const sanitizedContent = sanitizeMultilineText(content);
