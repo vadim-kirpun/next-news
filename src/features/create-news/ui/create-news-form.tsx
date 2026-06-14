@@ -33,11 +33,7 @@ export function CreateNewsForm() {
   }, [state.values]);
 
   return (
-    <form
-      action={formAction}
-      className="space-y-6"
-      encType="multipart/form-data"
-    >
+    <form action={formAction} className="space-y-6">
       <TitleField
         value={title}
         onChange={setTitle}
