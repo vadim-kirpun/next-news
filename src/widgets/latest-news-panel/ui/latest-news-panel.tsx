@@ -5,7 +5,7 @@ import { NewsCard } from "@/widgets/news-card";
 
 export async function LatestNewsPanel() {
   const latestNews = await getLatestNewsItem();
-  const likeInfoByNewsId = getNewsLikeInfo([latestNews.id]);
+  const likeInfoByNewsId = await getNewsLikeInfo([latestNews.id]);
 
   return (
     <>

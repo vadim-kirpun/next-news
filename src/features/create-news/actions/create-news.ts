@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import * as v from "valibot";
 import { createNewsItem } from "@/entities/news/queries";
@@ -151,8 +151,7 @@ export async function createNewsAction(
     };
   }
 
-  revalidatePath("/news");
-  revalidatePath("/");
+  updateTag("news");
 
   redirect(`/news/${createdNewsId}`);
 }

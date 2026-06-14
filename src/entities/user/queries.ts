@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cacheLife, cacheTag } from "next/cache";
+
 import type { User } from "@/entities/user/types";
 import { getDb } from "@/shared/db";
 import { DEFAULT_USER_ID } from "@/shared/db/seed";
@@ -18,7 +20,11 @@ function normalizeUser(row: UserRow): User {
   };
 }
 
-export function getDefaultUserId(): number {
+export async function getDefaultUserId(): Promise<number> {
+  "use cache";
+  cacheTag("users");
+  cacheLife("max");
+
   const db = getDb();
 
   const row = db
@@ -32,7 +38,11 @@ export function getDefaultUserId(): number {
   return row.id;
 }
 
-export function getDefaultUser(): User {
+export async function getDefaultUser(): Promise<User> {
+  "use cache";
+  cacheTag("users");
+  cacheLife("max");
+
   const db = getDb();
 
   const row = db

@@ -31,7 +31,7 @@ export async function ArchivePanel({ year, month }: ArchivePanelProps) {
       ? await getNewsForYearAndMonth(year, month)
       : await getNewsForYear(year)
     : [];
-  const likeInfoByNewsId = getNewsLikeInfo(news.map((item) => item.id));
+  const likeInfoByNewsId = await getNewsLikeInfo(news.map((item) => item.id));
 
   const title = year
     ? month

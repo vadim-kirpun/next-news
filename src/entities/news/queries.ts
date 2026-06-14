@@ -1,6 +1,6 @@
 import "server-only";
 
-import { cache } from "react";
+import { cacheLife, cacheTag } from "next/cache";
 import slugify from "slugify";
 
 import type { NewsItem } from "@/entities/news/types";
@@ -32,16 +32,24 @@ function normalizeNewsItem(item: NewsRow): NewsItem {
   };
 }
 
-export const getAllNews = cache(async (): Promise<NewsItem[]> => {
+export async function getAllNews(): Promise<NewsItem[]> {
+  "use cache";
+  cacheTag("news");
+  cacheLife("minutes");
+
   const db = getDb();
   const rows = db
     .prepare("SELECT * FROM news ORDER BY date DESC")
     .all() as NewsRow[];
 
   return rows.map(normalizeNewsItem);
-});
+}
 
 export async function getLatestNews(): Promise<NewsItem[]> {
+  "use cache";
+  cacheTag("news");
+  cacheLife("minutes");
+
   const db = getDb();
   const rows = db
     .prepare("SELECT * FROM news ORDER BY date DESC LIMIT 3")
@@ -51,6 +59,10 @@ export async function getLatestNews(): Promise<NewsItem[]> {
 }
 
 export async function getLatestNewsItem(): Promise<NewsItem> {
+  "use cache";
+  cacheTag("news");
+  cacheLife("minutes");
+
   const db = getDb();
   const row = db
     .prepare("SELECT * FROM news ORDER BY date DESC LIMIT 1")
@@ -63,20 +75,26 @@ export async function getLatestNewsItem(): Promise<NewsItem> {
   return normalizeNewsItem(row);
 }
 
-export const getNewsById = cache(
-  async (id: string): Promise<NewsItem | undefined> => {
-    const db = getDb();
-    const row = db
-      .prepare(
-        "SELECT * FROM news WHERE slug = ? OR CAST(id AS TEXT) = ? LIMIT 1",
-      )
-      .get(id, id) as NewsRow | undefined;
+export async function getNewsById(id: string): Promise<NewsItem | undefined> {
+  "use cache";
+  cacheTag("news", `news-item-${id}`);
+  cacheLife("minutes");
 
-    return row ? normalizeNewsItem(row) : undefined;
-  },
-);
+  const db = getDb();
+  const row = db
+    .prepare(
+      "SELECT * FROM news WHERE slug = ? OR CAST(id AS TEXT) = ? LIMIT 1",
+    )
+    .get(id, id) as NewsRow | undefined;
+
+  return row ? normalizeNewsItem(row) : undefined;
+}
 
 export async function getAvailableNewsYears(): Promise<number[]> {
+  "use cache";
+  cacheTag("news");
+  cacheLife("minutes");
+
   const db = getDb();
   const rows = db
     .prepare(
@@ -88,6 +106,10 @@ export async function getAvailableNewsYears(): Promise<number[]> {
 }
 
 export async function isValidNewsYear(year: number | string): Promise<boolean> {
+  "use cache";
+  cacheTag("news");
+  cacheLife("minutes");
+
   const parsedYear = Number(year);
 
   if (!Number.isInteger(parsedYear)) {
@@ -106,6 +128,10 @@ export async function isValidNewsMonth(
   year: number | string,
   month: number | string,
 ): Promise<boolean> {
+  "use cache";
+  cacheTag("news");
+  cacheLife("minutes");
+
   const parsedYear = Number(year);
   const parsedMonth = Number(month);
 
@@ -126,6 +152,10 @@ export async function isValidNewsMonth(
 export async function getAvailableNewsMonths(
   year: number | string,
 ): Promise<number[]> {
+  "use cache";
+  cacheTag("news");
+  cacheLife("minutes");
+
   const db = getDb();
   const rows = db
     .prepare(
@@ -139,6 +169,10 @@ export async function getAvailableNewsMonths(
 export async function getNewsForYear(
   year: number | string,
 ): Promise<NewsItem[]> {
+  "use cache";
+  cacheTag("news");
+  cacheLife("minutes");
+
   const db = getDb();
   const rows = db
     .prepare(
@@ -153,6 +187,10 @@ export async function getNewsForYearAndMonth(
   year: number | string,
   month: number | string,
 ): Promise<NewsItem[]> {
+  "use cache";
+  cacheTag("news");
+  cacheLife("minutes");
+
   const db = getDb();
   const rows = db
     .prepare(

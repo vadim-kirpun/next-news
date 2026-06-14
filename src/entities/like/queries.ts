@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cacheLife, cacheTag } from "next/cache";
+
 import type { NewsLikeInfo } from "@/entities/like/types";
 import { getDefaultUserId } from "@/entities/user/queries";
 import { getDb } from "@/shared/db";
@@ -13,10 +15,16 @@ function createEmptyLikeInfo(): NewsLikeInfo {
   return { isLiked: false, likeCount: 0 };
 }
 
-export function getNewsLikeInfo(
+export async function getNewsLikeInfo(
   newsIds: string[],
-  userId = getDefaultUserId(),
-): Record<string, NewsLikeInfo> {
+  userId?: number,
+): Promise<Record<string, NewsLikeInfo>> {
+  "use cache";
+  cacheTag("likes");
+  cacheLife("minutes");
+
+  const resolvedUserId = userId ?? (await getDefaultUserId());
+
   if (newsIds.length === 0) {
     return {};
   }
@@ -40,7 +48,7 @@ export function getNewsLikeInfo(
        FROM likes
        WHERE user_id = ? AND news_id IN (${placeholders})`,
     )
-    .all(userId, ...numericIds) as { news_id: number }[];
+    .all(resolvedUserId, ...numericIds) as { news_id: number }[];
 
   const result = Object.fromEntries(
     newsIds.map((id) => [id, createEmptyLikeInfo()]),
@@ -63,10 +71,11 @@ export function getNewsLikeInfo(
   return result;
 }
 
-export function toggleNewsLike(
+export async function toggleNewsLike(
   newsId: string,
-  userId = getDefaultUserId(),
-): NewsLikeInfo {
+  userId?: number,
+): Promise<NewsLikeInfo> {
+  const resolvedUserId = userId ?? (await getDefaultUserId());
   const db = getDb();
   const numericNewsId = Number(newsId);
 
@@ -84,17 +93,17 @@ export function toggleNewsLike(
 
   const existing = db
     .prepare("SELECT 1 FROM likes WHERE user_id = ? AND news_id = ? LIMIT 1")
-    .get(userId, numericNewsId);
+    .get(resolvedUserId, numericNewsId);
 
   if (existing) {
     db.prepare("DELETE FROM likes WHERE user_id = ? AND news_id = ?").run(
-      userId,
+      resolvedUserId,
       numericNewsId,
     );
   } else {
     db.prepare(
       "INSERT INTO likes (user_id, news_id, created_at) VALUES (?, ?, ?)",
-    ).run(userId, numericNewsId, new Date().toISOString());
+    ).run(resolvedUserId, numericNewsId, new Date().toISOString());
   }
 
   const likeCount = db

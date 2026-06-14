@@ -47,6 +47,7 @@ export default async function Home() {
                 src={getNewsImageSrc(featuredNews.image)}
                 alt={featuredNews.title}
                 fill
+                priority
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 1024px"
               />

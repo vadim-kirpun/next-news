@@ -9,7 +9,7 @@ import { NewsCard } from "@/widgets/news-card";
 
 export default async function NewsPage() {
   const news = await getAllNews();
-  const likeInfoByNewsId = getNewsLikeInfo(news.map((item) => item.id));
+  const likeInfoByNewsId = await getNewsLikeInfo(news.map((item) => item.id));
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-14">
