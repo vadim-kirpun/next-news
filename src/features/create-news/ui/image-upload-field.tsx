@@ -22,7 +22,7 @@ export function ImageUploadField({ errors }: ImageUploadFieldProps) {
       />
 
       <p className="text-sm text-muted-foreground">
-        Upload JPG, PNG or WEBP up to 3MB.
+        Upload JPG, PNG or WEBP up to 3MB. Images are resized and saved as WebP.
       </p>
 
       <FieldError errors={errors} />

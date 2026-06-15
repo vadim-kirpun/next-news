@@ -56,7 +56,7 @@ export function NewsImageViewer({
             src={getNewsImageSrc(article.image)}
             alt={article.title}
             fill
-            priority
+            preload
             className="object-contain"
             sizes={isModal ? "(max-width: 1024px) 100vw, 1024px" : "100vw"}
           />

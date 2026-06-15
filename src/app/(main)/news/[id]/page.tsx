@@ -30,7 +30,7 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
             src={getNewsImageSrc(article.image)}
             alt={article.title}
             fill
-            priority
+            preload
             className="object-cover transition-opacity hover:opacity-90"
             sizes="(max-width: 896px) 100vw, 896px"
           />

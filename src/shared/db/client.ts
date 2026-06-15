@@ -78,6 +78,7 @@ export function getReadDb() {
   const globalForDb = globalThis as GlobalWithDb;
 
   if (!globalForDb.newsReadDb) {
+    getWriteDb();
     globalForDb.newsReadDb = new Database(DB_PATH, { readonly: true });
   }
 

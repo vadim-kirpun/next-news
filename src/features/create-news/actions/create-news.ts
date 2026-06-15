@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import * as v from "valibot";
 import { createNewsItem } from "@/entities/news/queries";
 import type { CreateNewsState } from "@/features/create-news/model/form-state";
+import { processImageUpload } from "@/shared/lib/image-processing";
 
 const MAX_IMAGE_UPLOAD_SIZE = 3 * 1024 * 1024;
 const uploadDir = path.join(process.cwd(), "public", "images");
@@ -28,7 +29,7 @@ const createNewsSchema = v.strictObject({
   ),
 });
 
-function getImageExtensionFromSignature(buffer: Buffer) {
+function isSupportedImageSignature(buffer: Buffer) {
   const isPng =
     buffer.length >= 8 &&
     buffer[0] === 0x89 &&
@@ -41,7 +42,7 @@ function getImageExtensionFromSignature(buffer: Buffer) {
     buffer[7] === 0x0a;
 
   if (isPng) {
-    return "png";
+    return true;
   }
 
   const isJpeg =
@@ -51,7 +52,7 @@ function getImageExtensionFromSignature(buffer: Buffer) {
     buffer[2] === 0xff;
 
   if (isJpeg) {
-    return "jpg";
+    return true;
   }
 
   const isWebp =
@@ -59,11 +60,7 @@ function getImageExtensionFromSignature(buffer: Buffer) {
     buffer.subarray(0, 4).toString("ascii") === "RIFF" &&
     buffer.subarray(8, 12).toString("ascii") === "WEBP";
 
-  if (isWebp) {
-    return "webp";
-  }
-
-  return null;
+  return isWebp;
 }
 
 async function saveUploadedImage(file: File) {
@@ -76,18 +73,20 @@ async function saveUploadedImage(file: File) {
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const extension = getImageExtensionFromSignature(buffer);
 
-  if (!extension) {
+  if (!isSupportedImageSignature(buffer)) {
     throw new Error("Unsupported image format. Use JPG, PNG or WEBP.");
   }
+
+  const { buffer: processedBuffer, extension } =
+    await processImageUpload(buffer);
 
   await mkdir(uploadDir, { recursive: true });
 
   const filename = `uploaded-${Date.now()}-${randomUUID().slice(0, 8)}.${extension}`;
   const filePath = path.join(uploadDir, filename);
 
-  await writeFile(filePath, buffer);
+  await writeFile(filePath, processedBuffer);
 
   return filename;
 }
