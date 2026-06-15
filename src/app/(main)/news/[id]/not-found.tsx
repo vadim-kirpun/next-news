@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
 import { H1, Lead, Muted } from "@/shared/ui/typography";
+
+export const metadata: Metadata = {
+  title: "Article not found",
+  description: "This news story does not exist or may have been removed.",
+};
 
 export default function NewsNotFound() {
   return (

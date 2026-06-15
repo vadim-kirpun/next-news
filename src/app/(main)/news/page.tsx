@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllNews } from "@/entities/news/server";
 import { Button } from "@/shared/ui/button";
@@ -5,6 +6,12 @@ import { Input } from "@/shared/ui/input";
 import { Separator } from "@/shared/ui/separator";
 import { H1, Lead } from "@/shared/ui/typography";
 import { NewsCard } from "@/widgets/news-card";
+
+export const metadata: Metadata = {
+  title: "News",
+  description:
+    "Product and engineering updates presented in a clean editorial format.",
+};
 
 export default async function NewsPage() {
   const news = await getAllNews();

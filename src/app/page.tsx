@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getNewsImageSrc } from "@/entities/news";
@@ -11,6 +12,13 @@ import {
   CardHeader,
 } from "@/shared/ui/card";
 import { H1, H3, Lead, Muted } from "@/shared/ui/typography";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    description:
+      "Explore a clean editorial news feed with featured stories and dedicated article pages.",
+  };
+}
 
 export default async function Home() {
   const featuredNews = await getLatestNewsItem();

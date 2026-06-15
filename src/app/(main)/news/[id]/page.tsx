@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getNewsImageSrc } from "@/entities/news";
 import { getNewsById } from "@/entities/news/server";
+import { createArticleMetadata } from "@/shared/lib/metadata";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
 import { H1, Muted, P } from "@/shared/ui/typography";
@@ -10,6 +12,22 @@ import { H1, Muted, P } from "@/shared/ui/typography";
 type NewsDetailPageProps = {
   params: Promise<{ id: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: NewsDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const article = await getNewsById(id);
+
+  if (!article) {
+    return {
+      title: "Article not found",
+      description: "This news story does not exist or may have been removed.",
+    };
+  }
+
+  return createArticleMetadata(article);
+}
 
 export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
   const { id } = await params;

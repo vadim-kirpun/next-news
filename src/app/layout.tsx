@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { createRootMetadata } from "@/shared/lib/metadata";
 import { ThemeProvider } from "@/shared/ui/theme-provider";
 import "./globals.css";
 
@@ -14,11 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Next News",
-  description:
-    "Clean Apple-inspired news feed built with Next.js and shadcn/ui",
-};
+export const metadata = createRootMetadata();
 
 export default function RootLayout({
   children,

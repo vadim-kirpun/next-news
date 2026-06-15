@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getNewsById } from "@/entities/news/server";
+import { createArticleImageMetadata } from "@/shared/lib/metadata";
 import { NewsImageViewer } from "@/widgets/news-image-viewer";
 
 type NewsImagePageProps = {
@@ -14,12 +15,13 @@ export async function generateMetadata({
   const article = await getNewsById(id);
 
   if (!article) {
-    return { title: "Image not found" };
+    return {
+      title: "Image not found",
+      description: "The requested article image could not be found.",
+    };
   }
 
-  return {
-    title: `${article.title} — Image`,
-  };
+  return createArticleImageMetadata(article);
 }
 
 export default async function NewsImagePage({ params }: NewsImagePageProps) {

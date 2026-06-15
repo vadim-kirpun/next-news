@@ -1,6 +1,18 @@
+import type { Metadata } from "next";
+
 import { CreateNewsForm } from "@/features/create-news";
 import { Card, CardContent } from "@/shared/ui/card";
 import { H1, Lead } from "@/shared/ui/typography";
+
+export const metadata: Metadata = {
+  title: "Create News",
+  description:
+    "Publish a new article via secure server-side form actions.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function CreateNewsPage() {
   return (

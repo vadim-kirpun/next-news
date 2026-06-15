@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
+
+import { createArchiveMetadata } from "@/shared/lib/metadata";
 import { Separator } from "@/shared/ui/separator";
 import { H1, Lead } from "@/shared/ui/typography";
 import {
@@ -10,6 +13,8 @@ type ArchiveLayoutProps = {
   archive: React.ReactNode;
   latest: React.ReactNode;
 };
+
+export const metadata: Metadata = createArchiveMetadata();
 
 export default function ArchiveLayout({ archive, latest }: ArchiveLayoutProps) {
   return (

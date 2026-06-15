@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader } from "@/shared/ui/card";
 import { H1, Lead, Muted } from "@/shared/ui/typography";
+
+export const metadata: Metadata = {
+  title: "Page not found",
+  description: "The page you are looking for does not exist or may have been moved.",
+};
 
 export default function NotFound() {
   return (

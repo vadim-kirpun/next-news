@@ -1,9 +1,20 @@
+import type { Metadata } from "next";
+
 import { isValidNewsMonth, isValidNewsYear } from "@/entities/news/server";
+import { createArchiveMetadata } from "@/shared/lib/metadata";
 import { ArchivePanel } from "@/widgets/archive-panel";
 
 type ArchiveFilterPageProps = {
   params: Promise<{ filter?: string[] }>;
 };
+
+export async function generateMetadata({
+  params,
+}: ArchiveFilterPageProps): Promise<Metadata> {
+  const { filter } = await params;
+
+  return createArchiveMetadata(filter?.[0], filter?.[1]);
+}
 
 export default async function ArchiveFilterPage({
   params,
