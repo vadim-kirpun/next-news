@@ -1,15 +1,9 @@
 import "server-only";
 
-import { cacheLife, cacheTag } from "next/cache";
-
 import type { NewsLikeInfo } from "@/entities/like/types";
-import { getDefaultUserId } from "@/entities/user/queries";
-import { getReadDb, getWriteDb } from "@/shared/db";
-
-type LikeRow = {
-  news_id: number;
-  like_count: number;
-};
+import { getCurrentUserId } from "@/entities/user/queries";
+import { createSupabasePublicClient } from "@/shared/supabase/client";
+import { createSupabaseServerClient } from "@/shared/supabase/server";
 
 function createEmptyLikeInfo(): NewsLikeInfo {
   return { isLiked: false, likeCount: 0 };
@@ -17,47 +11,51 @@ function createEmptyLikeInfo(): NewsLikeInfo {
 
 export async function getNewsLikeInfo(
   newsIds: string[],
-  userId?: number,
+  userId?: string,
 ): Promise<Record<string, NewsLikeInfo>> {
-  "use cache";
-  cacheTag("likes");
-  cacheLife("minutes");
-
-  const resolvedUserId = userId ?? (await getDefaultUserId());
-
   if (newsIds.length === 0) {
     return {};
   }
 
-  const db = getReadDb();
   const numericIds = newsIds.map((id) => Number(id));
-  const placeholders = numericIds.map(() => "?").join(", ");
+  const invalidId = numericIds.some((id) => !Number.isInteger(id));
 
-  const likeCounts = db
-    .prepare(
-      `SELECT news_id, COUNT(*) AS like_count
-       FROM likes
-       WHERE news_id IN (${placeholders})
-       GROUP BY news_id`,
-    )
-    .all(...numericIds) as LikeRow[];
+  if (invalidId) {
+    return Object.fromEntries(newsIds.map((id) => [id, createEmptyLikeInfo()]));
+  }
 
-  const likedRows = db
-    .prepare(
-      `SELECT news_id
-       FROM likes
-       WHERE user_id = ? AND news_id IN (${placeholders})`,
-    )
-    .all(resolvedUserId, ...numericIds) as { news_id: number }[];
+  const resolvedUserId = userId ?? (await getCurrentUserId());
+  const publicSupabase = createSupabasePublicClient();
+
+  const { data: likeRows, error: likeRowsError } = await publicSupabase
+    .from("likes")
+    .select("news_id")
+    .in("news_id", numericIds);
+
+  if (likeRowsError) {
+    throw new Error(likeRowsError.message);
+  }
+
+  const { data: likedRows, error: likedRowsError } = resolvedUserId
+    ? await publicSupabase
+        .from("likes")
+        .select("news_id")
+        .eq("user_id", resolvedUserId)
+        .in("news_id", numericIds)
+    : { data: [], error: null };
+
+  if (likedRowsError) {
+    throw new Error(likedRowsError.message);
+  }
 
   const result = Object.fromEntries(
     newsIds.map((id) => [id, createEmptyLikeInfo()]),
   );
 
-  for (const row of likeCounts) {
+  for (const row of likeRows) {
     const id = String(row.news_id);
     if (result[id]) {
-      result[id].likeCount = row.like_count;
+      result[id].likeCount += 1;
     }
   }
 
@@ -73,45 +71,80 @@ export async function getNewsLikeInfo(
 
 export async function toggleNewsLike(
   newsId: string,
-  userId?: number,
+  userId?: string,
 ): Promise<NewsLikeInfo> {
-  const resolvedUserId = userId ?? (await getDefaultUserId());
-  const db = getWriteDb();
+  const resolvedUserId = userId ?? (await getCurrentUserId());
   const numericNewsId = Number(newsId);
+
+  if (!resolvedUserId) {
+    throw new Error("Please sign in to like news.");
+  }
 
   if (!Number.isInteger(numericNewsId)) {
     throw new Error("Invalid news id");
   }
 
-  const news = db
-    .prepare("SELECT id FROM news WHERE id = ? LIMIT 1")
-    .get(numericNewsId);
+  const publicSupabase = createSupabasePublicClient();
+  const { data: news, error: newsError } = await publicSupabase
+    .from("news")
+    .select("id")
+    .eq("id", numericNewsId)
+    .limit(1)
+    .maybeSingle();
+
+  if (newsError) {
+    throw new Error(newsError.message);
+  }
 
   if (!news) {
     throw new Error("News item not found");
   }
 
-  const existing = db
-    .prepare("SELECT 1 FROM likes WHERE user_id = ? AND news_id = ? LIMIT 1")
-    .get(resolvedUserId, numericNewsId);
+  const supabase = await createSupabaseServerClient();
+  const { data: existing, error: existingError } = await supabase
+    .from("likes")
+    .select("news_id")
+    .eq("user_id", resolvedUserId)
+    .eq("news_id", numericNewsId)
+    .limit(1)
+    .maybeSingle();
 
-  if (existing) {
-    db.prepare("DELETE FROM likes WHERE user_id = ? AND news_id = ?").run(
-      resolvedUserId,
-      numericNewsId,
-    );
-  } else {
-    db.prepare(
-      "INSERT INTO likes (user_id, news_id, created_at) VALUES (?, ?, ?)",
-    ).run(resolvedUserId, numericNewsId, new Date().toISOString());
+  if (existingError) {
+    throw new Error(existingError.message);
   }
 
-  const likeCount = db
-    .prepare("SELECT COUNT(*) AS count FROM likes WHERE news_id = ?")
-    .get(numericNewsId) as { count: number };
+  if (existing) {
+    const { error } = await supabase
+      .from("likes")
+      .delete()
+      .eq("user_id", resolvedUserId)
+      .eq("news_id", numericNewsId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  } else {
+    const { error } = await supabase.from("likes").insert({
+      user_id: resolvedUserId,
+      news_id: numericNewsId,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  const { count, error: countError } = await publicSupabase
+    .from("likes")
+    .select("*", { count: "exact", head: true })
+    .eq("news_id", numericNewsId);
+
+  if (countError) {
+    throw new Error(countError.message);
+  }
 
   return {
     isLiked: !existing,
-    likeCount: likeCount.count,
+    likeCount: count ?? 0,
   };
 }

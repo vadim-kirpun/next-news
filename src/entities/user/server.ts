@@ -1,3 +1,8 @@
 import "server-only";
 
-export { getDefaultUser, getDefaultUserId } from "./queries";
+export {
+  getCurrentUser,
+  getCurrentUserId,
+  getDefaultUser,
+  getDefaultUserId,
+} from "./queries";

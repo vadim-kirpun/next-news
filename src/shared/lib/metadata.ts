@@ -43,10 +43,7 @@ export function createArticleImageMetadata(article: NewsItem): Metadata {
   };
 }
 
-export function createArchiveMetadata(
-  year?: string,
-  month?: string,
-): Metadata {
+export function createArchiveMetadata(year?: string, month?: string): Metadata {
   if (year && month) {
     const monthName = new Date(Number(year), Number(month) - 1).toLocaleString(
       "en-US",

@@ -8,16 +8,11 @@ import {
   sanitizeMultilineText,
   sanitizePlainText,
 } from "@/shared/api/sanitize";
-import { getReadDb, getWriteDb } from "@/shared/db";
+import { createSupabasePublicClient } from "@/shared/supabase/client";
+import { createSupabaseServerClient } from "@/shared/supabase/server";
+import type { Database } from "@/shared/supabase/types";
 
-type NewsRow = {
-  id: number;
-  slug: string;
-  title: string;
-  image: string;
-  date: string;
-  content: string;
-};
+type NewsRow = Database["public"]["Tables"]["news"]["Row"];
 
 type CreateNewsInput = {
   title: string;
@@ -37,12 +32,17 @@ export async function getAllNews(): Promise<NewsItem[]> {
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getReadDb();
-  const rows = db
-    .prepare("SELECT * FROM news ORDER BY date DESC")
-    .all() as NewsRow[];
+  const supabase = createSupabasePublicClient();
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .order("date", { ascending: false });
 
-  return rows.map(normalizeNewsItem);
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.map(normalizeNewsItem);
 }
 
 export async function getLatestNews(): Promise<NewsItem[]> {
@@ -50,12 +50,18 @@ export async function getLatestNews(): Promise<NewsItem[]> {
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getReadDb();
-  const rows = db
-    .prepare("SELECT * FROM news ORDER BY date DESC LIMIT 3")
-    .all() as NewsRow[];
+  const supabase = createSupabasePublicClient();
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .order("date", { ascending: false })
+    .limit(3);
 
-  return rows.map(normalizeNewsItem);
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.map(normalizeNewsItem);
 }
 
 export async function getLatestNewsItem(): Promise<NewsItem> {
@@ -63,16 +69,23 @@ export async function getLatestNewsItem(): Promise<NewsItem> {
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getReadDb();
-  const row = db
-    .prepare("SELECT * FROM news ORDER BY date DESC LIMIT 1")
-    .get() as NewsRow | undefined;
+  const supabase = createSupabasePublicClient();
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .order("date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-  if (!row) {
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
     throw new Error("No news items found");
   }
 
-  return normalizeNewsItem(row);
+  return normalizeNewsItem(data);
 }
 
 export async function getNewsById(id: string): Promise<NewsItem | undefined> {
@@ -80,14 +93,18 @@ export async function getNewsById(id: string): Promise<NewsItem | undefined> {
   cacheTag("news", `news-item-${id}`);
   cacheLife("minutes");
 
-  const db = getReadDb();
-  const row = db
-    .prepare(
-      "SELECT * FROM news WHERE slug = ? OR CAST(id AS TEXT) = ? LIMIT 1",
-    )
-    .get(id, id) as NewsRow | undefined;
+  const supabase = createSupabasePublicClient();
+  const numericId = Number(id);
+  const query = supabase.from("news").select("*").limit(1);
+  const { data, error } = Number.isInteger(numericId)
+    ? await query.eq("id", numericId).maybeSingle()
+    : await query.eq("slug", id).maybeSingle();
 
-  return row ? normalizeNewsItem(row) : undefined;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ? normalizeNewsItem(data) : undefined;
 }
 
 export async function getAvailableNewsYears(): Promise<number[]> {
@@ -95,14 +112,16 @@ export async function getAvailableNewsYears(): Promise<number[]> {
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getReadDb();
-  const rows = db
-    .prepare(
-      "SELECT DISTINCT CAST(strftime('%Y', date) AS INTEGER) AS year FROM news ORDER BY year DESC",
-    )
-    .all() as { year: number }[];
+  const supabase = createSupabasePublicClient();
+  const { data, error } = await supabase.from("news").select("date");
 
-  return rows.map((row) => row.year);
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return Array.from(
+    new Set(data.map((row) => Number(row.date.slice(0, 4)))),
+  ).sort((a, b) => b - a);
 }
 
 export async function isValidNewsYear(year: number | string): Promise<boolean> {
@@ -116,12 +135,20 @@ export async function isValidNewsYear(year: number | string): Promise<boolean> {
     return false;
   }
 
-  const db = getReadDb();
-  const row = db
-    .prepare("SELECT 1 FROM news WHERE strftime('%Y', date) = ? LIMIT 1")
-    .get(String(parsedYear));
+  const supabase = createSupabasePublicClient();
+  const { data, error } = await supabase
+    .from("news")
+    .select("id")
+    .gte("date", `${parsedYear}-01-01`)
+    .lt("date", `${parsedYear + 1}-01-01`)
+    .limit(1)
+    .maybeSingle();
 
-  return row !== undefined;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data !== null;
 }
 
 export async function isValidNewsMonth(
@@ -139,14 +166,22 @@ export async function isValidNewsMonth(
     return false;
   }
 
-  const db = getReadDb();
-  const row = db
-    .prepare(
-      "SELECT 1 FROM news WHERE strftime('%Y', date) = ? AND CAST(strftime('%m', date) AS INTEGER) = ? LIMIT 1",
-    )
-    .get(String(parsedYear), parsedMonth);
+  const monthStart = new Date(Date.UTC(parsedYear, parsedMonth - 1, 1));
+  const nextMonthStart = new Date(Date.UTC(parsedYear, parsedMonth, 1));
+  const supabase = createSupabasePublicClient();
+  const { data, error } = await supabase
+    .from("news")
+    .select("id")
+    .gte("date", monthStart.toISOString().slice(0, 10))
+    .lt("date", nextMonthStart.toISOString().slice(0, 10))
+    .limit(1)
+    .maybeSingle();
 
-  return row !== undefined;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data !== null;
 }
 
 export async function getAvailableNewsMonths(
@@ -156,14 +191,21 @@ export async function getAvailableNewsMonths(
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getReadDb();
-  const rows = db
-    .prepare(
-      "SELECT DISTINCT CAST(strftime('%m', date) AS INTEGER) AS month FROM news WHERE strftime('%Y', date) = ? ORDER BY month DESC",
-    )
-    .all(String(+year)) as { month: number }[];
+  const parsedYear = Number(year);
+  const supabase = createSupabasePublicClient();
+  const { data, error } = await supabase
+    .from("news")
+    .select("date")
+    .gte("date", `${parsedYear}-01-01`)
+    .lt("date", `${parsedYear + 1}-01-01`);
 
-  return rows.map((row) => row.month);
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return Array.from(
+    new Set(data.map((row) => Number(row.date.slice(5, 7)))),
+  ).sort((a, b) => b - a);
 }
 
 export async function getNewsForYear(
@@ -173,14 +215,20 @@ export async function getNewsForYear(
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getReadDb();
-  const rows = db
-    .prepare(
-      "SELECT * FROM news WHERE strftime('%Y', date) = ? ORDER BY date DESC",
-    )
-    .all(String(+year)) as NewsRow[];
+  const parsedYear = Number(year);
+  const supabase = createSupabasePublicClient();
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .gte("date", `${parsedYear}-01-01`)
+    .lt("date", `${parsedYear + 1}-01-01`)
+    .order("date", { ascending: false });
 
-  return rows.map(normalizeNewsItem);
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.map(normalizeNewsItem);
 }
 
 export async function getNewsForYearAndMonth(
@@ -191,18 +239,27 @@ export async function getNewsForYearAndMonth(
   cacheTag("news");
   cacheLife("minutes");
 
-  const db = getReadDb();
-  const rows = db
-    .prepare(
-      "SELECT * FROM news WHERE strftime('%Y', date) = ? AND CAST(strftime('%m', date) AS INTEGER) = ? ORDER BY date DESC",
-    )
-    .all(String(+year), +month) as NewsRow[];
+  const parsedYear = Number(year);
+  const parsedMonth = Number(month);
+  const monthStart = new Date(Date.UTC(parsedYear, parsedMonth - 1, 1));
+  const nextMonthStart = new Date(Date.UTC(parsedYear, parsedMonth, 1));
+  const supabase = createSupabasePublicClient();
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .gte("date", monthStart.toISOString().slice(0, 10))
+    .lt("date", nextMonthStart.toISOString().slice(0, 10))
+    .order("date", { ascending: false });
 
-  return rows.map(normalizeNewsItem);
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.map(normalizeNewsItem);
 }
 
-function createUniqueSlug(baseTitle: string) {
-  const db = getWriteDb();
+async function createUniqueSlug(baseTitle: string) {
+  const supabase = createSupabasePublicClient();
   const baseSlug =
     slugify(baseTitle, { lower: true, strict: true, trim: true }) ||
     "news-item";
@@ -211,11 +268,18 @@ function createUniqueSlug(baseTitle: string) {
   let suffix = 1;
 
   while (true) {
-    const row = db
-      .prepare("SELECT 1 FROM news WHERE slug = ? LIMIT 1")
-      .get(candidate);
+    const { data, error } = await supabase
+      .from("news")
+      .select("id")
+      .eq("slug", candidate)
+      .limit(1)
+      .maybeSingle();
 
-    if (!row) {
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
       return candidate;
     }
 
@@ -229,26 +293,28 @@ export async function createNewsItem({
   content,
   image,
 }: CreateNewsInput): Promise<NewsItem> {
-  const db = getWriteDb();
+  const supabase = await createSupabaseServerClient();
 
   const sanitizedTitle = sanitizePlainText(title);
   const sanitizedContent = sanitizeMultilineText(content);
-  const slug = createUniqueSlug(sanitizedTitle);
+  const slug = await createUniqueSlug(sanitizedTitle);
   const date = new Date().toISOString().slice(0, 10);
 
-  const result = db
-    .prepare(
-      "INSERT INTO news (slug, title, content, date, image) VALUES (?, ?, ?, ?, ?)",
-    )
-    .run(slug, sanitizedTitle, sanitizedContent, date, image);
+  const { data, error } = await supabase
+    .from("news")
+    .insert({
+      slug,
+      title: sanitizedTitle,
+      content: sanitizedContent,
+      date,
+      image,
+    })
+    .select("*")
+    .single();
 
-  const created = db
-    .prepare("SELECT * FROM news WHERE id = ? LIMIT 1")
-    .get(result.lastInsertRowid) as NewsRow | undefined;
-
-  if (!created) {
-    throw new Error("Failed to create news item");
+  if (error) {
+    throw new Error(error.message);
   }
 
-  return normalizeNewsItem(created);
+  return normalizeNewsItem(data);
 }

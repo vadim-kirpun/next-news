@@ -6,8 +6,7 @@ import { H1, Lead } from "@/shared/ui/typography";
 
 export const metadata: Metadata = {
   title: "Create News",
-  description:
-    "Publish a new article via secure server-side form actions.",
+  description: "Publish a new article via secure server-side form actions.",
   robots: {
     index: false,
     follow: false,

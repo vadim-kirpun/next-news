@@ -32,10 +32,7 @@ function NewsCardLike({ newsId }: { newsId: string }) {
   );
 }
 
-export function NewsCard({
-  newsItem,
-  variant = "default",
-}: NewsCardProps) {
+export function NewsCard({ newsItem, variant = "default" }: NewsCardProps) {
   const articleHref = `/news/${newsItem.id}`;
 
   if (variant === "featured") {

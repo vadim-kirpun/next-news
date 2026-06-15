@@ -1,57 +1,82 @@
 import "server-only";
 
-import { cacheLife, cacheTag } from "next/cache";
-
 import type { User } from "@/entities/user/types";
-import { getReadDb } from "@/shared/db";
-import { DEFAULT_USER_ID } from "@/shared/db/seed";
+import { createSupabaseServerClient } from "@/shared/supabase/server";
+import type { Database } from "@/shared/supabase/types";
 
-type UserRow = {
-  id: number;
-  name: string;
-  created_at: string;
-};
+type UserRow = Database["public"]["Tables"]["profiles"]["Row"];
 
-function normalizeUser(row: UserRow): User {
+function normalizeUser(row: UserRow, email?: string): User {
   return {
-    id: String(row.id),
+    id: row.id,
     name: row.name,
+    email,
     createdAt: row.created_at,
   };
 }
 
-export async function getDefaultUserId(): Promise<number> {
-  "use cache";
-  cacheTag("users");
-  cacheLife("max");
-
-  const db = getReadDb();
-
-  const row = db
-    .prepare("SELECT id FROM users WHERE id = ? LIMIT 1")
-    .get(DEFAULT_USER_ID) as { id: number } | undefined;
-
-  if (!row) {
-    throw new Error("Default user not found");
-  }
-
-  return row.id;
+function getNameFromEmail(email: string | undefined) {
+  return email?.split("@")[0] || "User";
 }
 
-export async function getDefaultUser(): Promise<User> {
-  "use cache";
-  cacheTag("users");
-  cacheLife("max");
+export async function getCurrentUserId(): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
-  const db = getReadDb();
-
-  const row = db
-    .prepare("SELECT * FROM users WHERE id = ? LIMIT 1")
-    .get(DEFAULT_USER_ID) as UserRow | undefined;
-
-  if (!row) {
-    throw new Error("Default user not found");
+  if (error || !user) {
+    return null;
   }
 
-  return normalizeUser(row);
+  return user.id;
 }
+
+export async function getCurrentUser(): Promise<User | null> {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return null;
+  }
+
+  const { data, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .limit(1)
+    .maybeSingle();
+
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
+
+  if (data) {
+    return normalizeUser(data, user.email);
+  }
+
+  const { data: createdProfile, error: createProfileError } = await supabase
+    .from("profiles")
+    .insert({
+      id: user.id,
+      name:
+        typeof user.user_metadata.name === "string"
+          ? user.user_metadata.name
+          : getNameFromEmail(user.email),
+    })
+    .select("*")
+    .single();
+
+  if (createProfileError) {
+    throw new Error(createProfileError.message);
+  }
+
+  return normalizeUser(createdProfile, user.email);
+}
+
+export const getDefaultUserId = getCurrentUserId;
+export const getDefaultUser = getCurrentUser;

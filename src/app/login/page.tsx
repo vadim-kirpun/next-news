@@ -1,48 +1,89 @@
-import Link from "next/link";
+import { signInAction, signUpAction } from "@/features/auth/actions/auth";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { H1, Lead, Muted } from "@/shared/ui/typography";
 
-export default function AuthPage() {
+type AuthPageProps = {
+  searchParams: Promise<{
+    error?: string;
+    message?: string;
+  }>;
+};
+
+export default async function AuthPage({ searchParams }: AuthPageProps) {
+  const { error, message } = await searchParams;
+
   return (
     <div className="min-h-full bg-gradient-to-b from-muted/40 via-background to-background dark:from-zinc-950 dark:via-background dark:to-zinc-950">
       <main className="mx-auto flex min-h-[calc(100vh-3.5rem)] w-full max-w-5xl items-center justify-center px-6 py-12">
         <Card className="w-full max-w-md rounded-3xl border-border/60 bg-card/85 shadow-[0_10px_30px_rgba(0,0,0,0.05)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
           <CardHeader className="space-y-2 text-center">
             <Muted className="text-sm uppercase tracking-[0.2em]">
-              Mock auth
+              Supabase auth
             </Muted>
 
             <H1 className="text-3xl font-semibold tracking-tight">Sign in</H1>
 
             <Lead className="text-base">
-              Temporary interface without real authentication logic.
+              Use email and password to access your account.
             </Lead>
           </CardHeader>
 
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <CardTitle className="text-sm font-medium">Email</CardTitle>
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                className="h-10"
-              />
-            </div>
+            <form className="space-y-4">
+              <div className="space-y-2">
+                <CardTitle className="text-sm font-medium">Email</CardTitle>
+                <Input
+                  name="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  className="h-10"
+                  required
+                />
+              </div>
 
-            <div className="space-y-2">
-              <CardTitle className="text-sm font-medium">Password</CardTitle>
-              <Input type="password" placeholder="••••••••" className="h-10" />
-            </div>
+              <div className="space-y-2">
+                <CardTitle className="text-sm font-medium">Password</CardTitle>
+                <Input
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  className="h-10"
+                  minLength={6}
+                  required
+                />
+              </div>
 
-            <Button render={<Link href="/" />} className="h-10 w-full">
-              Login
-            </Button>
+              {error ? (
+                <Muted className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-destructive text-sm">
+                  {error}
+                </Muted>
+              ) : null}
 
-            <Button render={<Link href="/" />} variant="outline" className="h-10 w-full">
-              Registration
-            </Button>
+              {message ? (
+                <Muted className="rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm">
+                  {message}
+                </Muted>
+              ) : null}
+
+              <Button
+                nativeButton
+                formAction={signInAction}
+                className="h-10 w-full"
+              >
+                Login
+              </Button>
+
+              <Button
+                nativeButton
+                formAction={signUpAction}
+                variant="outline"
+                className="h-10 w-full"
+              >
+                Registration
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </main>

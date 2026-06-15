@@ -8,6 +8,7 @@ import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import * as v from "valibot";
 import { createNewsItem } from "@/entities/news/queries";
+import { getCurrentUserId } from "@/entities/user/server";
 import type { CreateNewsState } from "@/features/create-news/model/form-state";
 import { processImageUpload } from "@/shared/lib/image-processing";
 
@@ -95,6 +96,18 @@ export async function createNewsAction(
   _prevState: CreateNewsState,
   formData: FormData,
 ): Promise<CreateNewsState> {
+  const userId = await getCurrentUserId();
+
+  if (!userId) {
+    return {
+      message: "Please sign in to publish news.",
+      values: {
+        title: String(formData.get("title") ?? ""),
+        content: String(formData.get("content") ?? ""),
+      },
+    };
+  }
+
   const uploadedImage = formData.get("imageUpload");
   const rawValues = {
     title: String(formData.get("title") ?? ""),

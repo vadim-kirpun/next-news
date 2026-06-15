@@ -3,11 +3,29 @@
 import { Avatar } from "@base-ui/react/avatar";
 import { Popover } from "@base-ui/react/popover";
 import Link from "next/link";
+import type { User } from "@/entities/user/types";
+import { signOutAction } from "@/features/auth/actions/auth";
 import { Button } from "@/shared/ui/button";
 import { ThemeToggle } from "@/shared/ui/theme-toggle";
 import { Muted, Text } from "@/shared/ui/typography";
 
-export function UserMenu() {
+type UserMenuProps = {
+  user: User | null;
+};
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+export function UserMenu({ user }: UserMenuProps) {
+  const displayName = user?.name ?? "Guest";
+  const initials = getInitials(displayName);
+
   return (
     <Popover.Root>
       <Popover.Trigger
@@ -15,7 +33,7 @@ export function UserMenu() {
         className="inline-flex size-9 items-center justify-center rounded-full border border-border/60 bg-muted/50 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 outline-none"
       >
         <Avatar.Root>
-          <Avatar.Fallback>VK</Avatar.Fallback>
+          <Avatar.Fallback>{initials || "?"}</Avatar.Fallback>
         </Avatar.Root>
       </Popover.Trigger>
 
@@ -24,9 +42,9 @@ export function UserMenu() {
           <Popover.Popup className="w-56 rounded-xl border border-border/60 bg-card p-3 text-card-foreground shadow-[0_10px_30px_rgba(0,0,0,0.2)] outline-none">
             <div className="mb-3 space-y-1">
               <Text variant="small" className="font-semibold">
-                Vadim Kirpun
+                {displayName}
               </Text>
-              <Muted>vadim@example.com</Muted>
+              <Muted>{user?.email ?? "Not signed in"}</Muted>
             </div>
 
             <div className="mb-3 flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
@@ -34,13 +52,26 @@ export function UserMenu() {
               <ThemeToggle />
             </div>
 
-            <Button
-              render={<Link href="/login" />}
-              variant="destructive"
-              className="h-9 w-full"
-            >
-              Logout
-            </Button>
+            {user ? (
+              <form action={signOutAction}>
+                <Button
+                  nativeButton
+                  type="submit"
+                  variant="destructive"
+                  className="h-9 w-full"
+                >
+                  Logout
+                </Button>
+              </form>
+            ) : (
+              <Button
+                render={<Link href="/login" />}
+                variant="outline"
+                className="h-9 w-full"
+              >
+                Login
+              </Button>
+            )}
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
