@@ -7,7 +7,8 @@ import { H1, Lead, Muted } from "@/shared/ui/typography";
 
 export const metadata: Metadata = {
   title: "Page not found",
-  description: "The page you are looking for does not exist or may have been moved.",
+  description:
+    "The page you are looking for does not exist or may have been moved.",
 };
 
 export default function NotFound() {

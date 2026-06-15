@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function Home() {
+export default async function HomePage() {
   const featuredNews = await getLatestNewsItem();
 
   return (
