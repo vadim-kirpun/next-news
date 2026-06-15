@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { ThemeToggle } from "@/shared/ui/theme-toggle";
 import { Text } from "@/shared/ui/typography";
 import { HeaderNav } from "./header-nav";
 import { UserMenu } from "./user-menu";
@@ -21,7 +20,6 @@ export function MainHeader() {
         <div className="flex items-center gap-2">
           <HeaderNav />
           <UserMenu />
-          <ThemeToggle />
         </div>
       </div>
     </header>

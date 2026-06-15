@@ -4,6 +4,7 @@ import { Avatar } from "@base-ui/react/avatar";
 import { Popover } from "@base-ui/react/popover";
 import Link from "next/link";
 import { Button } from "@/shared/ui/button";
+import { ThemeToggle } from "@/shared/ui/theme-toggle";
 import { Muted, Text } from "@/shared/ui/typography";
 
 export function UserMenu() {
@@ -19,13 +20,18 @@ export function UserMenu() {
       </Popover.Trigger>
 
       <Popover.Portal>
-        <Popover.Positioner align="end" sideOffset={8}>
+        <Popover.Positioner align="end" sideOffset={8} className="z-[70]">
           <Popover.Popup className="w-56 rounded-xl border border-border/60 bg-card p-3 text-card-foreground shadow-[0_10px_30px_rgba(0,0,0,0.2)] outline-none">
             <div className="mb-3 space-y-1">
               <Text variant="small" className="font-semibold">
                 Vadim Kirpun
               </Text>
               <Muted>vadim@example.com</Muted>
+            </div>
+
+            <div className="mb-3 flex items-center justify-between rounded-lg border border-border/60 px-3 py-2">
+              <Muted className="text-sm">Theme</Muted>
+              <ThemeToggle />
             </div>
 
             <Button
