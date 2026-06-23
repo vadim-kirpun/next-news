@@ -20,7 +20,7 @@ export async function createSupabaseServerClient() {
           try {
             cookieStore.set(name, value, options);
           } catch {
-            // Server components cannot always write cookies; middleware refreshes them.
+            // Server components cannot always write cookies; proxy refreshes them.
           }
         }
       },
